@@ -442,7 +442,7 @@ use uuid::Uuid;
 ```
 
 Now, in the `main` function, we will start by initialising our logger and creating a pair of
-BeforeMiddleware and AfterMiddleware that is required for out logger.
+BeforeMiddleware and AfterMiddleware that is required for the logger.
 
 ```rust
 fn main() {
@@ -531,5 +531,7 @@ You now have a working web application. It does not do much, however. Things you
 * Have a look at the libraries provided by the Iron team ([Iron Common](https://github.com/iron-graveyard/common))
 * Implement authentication, registering and logging in
 * Implement a database using for example PostgreSQL
+* Implement updating or deleting posts
+* ...
 
 If you are getting any errors, you can check out the complete code [here](https://github.com/m-decoster/iron-example).
