@@ -535,3 +535,7 @@ You now have a working web application. It does not do much, however. Things you
 * ...
 
 If you are getting any errors, you can check out the complete code [here](https://github.com/m-decoster/iron-example).
+
+## Demo
+
+A small demo (only name and summary allowed) is available [here](https://m-decoster.github.io/iron-example/).
