@@ -1,0 +1,34 @@
+extern crate iron;
+extern crate router;
+extern crate rustc_serialize;
+extern crate chrono;
+
+mod model;
+mod database;
+mod handlers;
+
+use model::*;
+use database::Database;
+use handlers::*;
+
+use iron::prelude::Chain;
+use iron::Iron;
+use router::Router;
+
+fn main() {
+    let mut database = Database::new();
+    let author = Author::new("Mathieu");
+    let post = Post::new("First post", "This is the first post ever", &author, chrono::offset::utc::UTC::now());
+    database.add_post(post);
+    let post = Post::new("Hermes is now online", "Today marks the day that Hermes is online!", &author, chrono::offset::utc::UTC::now());
+    database.add_post(post);
+
+    let handlers = Handlers::new(database);
+    let json_content_middleware = JsonAfterMiddleware;
+
+    let mut router = Router::new();
+    router.get("/feed", handlers.feed, "feed");
+    let mut chain = Chain::new(router);
+    chain.link_after(json_content_middleware);
+    Iron::new(chain).http("localhost:3000").unwrap();
+}

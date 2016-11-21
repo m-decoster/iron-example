@@ -1,0 +1,139 @@
+use std::sync::{Arc, Mutex};
+use std::io::Read;
+use iron::{Handler, status, IronResult, Response, Request, AfterMiddleware};
+use iron::headers::ContentType;
+use rustc_serialize::json;
+use database::Database;
+use uuid::Uuid;
+use router::Router;
+use model::Post;
+use std::error::Error;
+
+macro_rules! try_handler {
+    ( $e:expr ) => {
+        match $e {
+            Ok(x) => x,
+            Err(e) => return Ok(Response::with((status::InternalServerError, e.description())))
+        } 
+    }
+}
+
+macro_rules! lock {
+    ( $e:expr ) => { $e.lock().unwrap() }
+}
+
+pub struct Handlers {
+    pub feed: FeedHandler,
+    pub make_post: MakePostHandler,
+    pub post: PostHandler,
+}
+
+impl Handlers {
+    pub fn new(database: Database) -> Handlers {
+        let database = Arc::new(Mutex::new(database));
+        Handlers {
+            feed: FeedHandler::new(database.clone()),
+            make_post: MakePostHandler::new(database.clone()),
+            post: PostHandler::new(database.clone()),
+        }
+    }
+}
+
+pub struct FeedHandler {
+    database: Arc<Mutex<Database>>,
+}
+
+impl FeedHandler {
+    fn new(database: Arc<Mutex<Database>>) -> FeedHandler {
+        FeedHandler { database: database }
+    }
+}
+
+impl Handler for FeedHandler {
+    fn handle(&self, _: &mut Request) -> IronResult<Response> {
+        let payload = try_handler!(json::encode(lock!(self.database).posts()));
+        Ok(Response::with((status::Ok, payload)))
+    }
+}
+
+pub struct MakePostHandler {
+    database: Arc<Mutex<Database>>,
+}
+
+impl MakePostHandler {
+    fn new(database: Arc<Mutex<Database>>) -> MakePostHandler {
+        MakePostHandler { database: database }
+    }
+}
+
+impl Handler for MakePostHandler {
+    fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        let mut payload = String::new();
+        match req.body.read_to_string(&mut payload) {
+            Ok(_) => {}
+            Err(e) => return Ok(Response::with((status::InternalServerError, e.description()))),
+        }
+
+        let post = match json::decode(&payload) {
+            Ok(p) => p,
+            Err(e) => return Ok(Response::with((status::BadRequest, e.description()))),
+        };
+
+        lock!(self.database).add_post(post);
+
+        Ok(Response::with((status::Created, payload)))
+    }
+}
+
+pub struct PostHandler {
+    database: Arc<Mutex<Database>>,
+}
+
+impl PostHandler {
+    fn new(database: Arc<Mutex<Database>>) -> PostHandler {
+        PostHandler { database: database }
+    }
+
+    fn find_post(&self, id: &Uuid) -> Option<Post> {
+        let locked = lock!(self.database);
+        let mut iterator = locked.posts().iter();
+        iterator.find(|post| post.uuid() == id).map(|post| post.clone())
+    }
+}
+
+impl Handler for PostHandler {
+    fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        let ref post_id = match req.extensions
+            .get::<Router>() {
+                Some(router) => match router.find("id") {
+                    Some(id) => id,
+                    None => return Ok(Response::with(status::BadRequest)),
+                },
+                None => return Ok(Response::with(status::InternalServerError)),
+        };
+
+        let id = match Uuid::parse_str(post_id) {
+            Ok(id) => id,
+            Err(e) => return Ok(Response::with((status::BadRequest, e.description()))),
+        };
+
+        if let Some(post) = self.find_post(&id) {
+            let payload = match json::encode(&post) {
+                Ok(payload) => payload,
+                Err(e) => return Ok(Response::with((status::BadRequest, e.description()))),
+            };
+            Ok(Response::with((status::Ok, payload)))
+        } else {
+            Ok(Response::with((status::NotFound)))
+        }
+    }
+}
+
+pub struct JsonAfterMiddleware;
+
+impl AfterMiddleware for JsonAfterMiddleware {
+    fn after(&self, _: &mut Request, mut res: Response) -> IronResult<Response> {
+        res.headers.set(ContentType::json());
+        Ok(res)
+    }
+}
