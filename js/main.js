@@ -20,7 +20,7 @@ $(function() {
           }
       });
       json.uuid = "ed8729be-f33e-4395-b1c0-f5673668f89e"; // dummy
-      json.message = "";
+      json.contents = "";
       console.log(json);
 
       $.ajax({
