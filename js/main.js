@@ -25,7 +25,7 @@ $(function() {
 
       $.ajax({
         type: "POST",
-        url: "http://anonfeed.herokuapp.com/post",
+        url: "https://anonfeed.herokuapp.com/post",
         data: JSON.stringify(json),
         contentType: 'application/json; charset=utf-8',
         success: function(msg) {
