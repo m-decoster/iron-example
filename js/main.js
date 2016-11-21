@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    $.get("http://localhost:3000/feed", function(data) {
+    $.get("https://anonfeed.herokuapp.com/feed", function(data) {
         let feed = "";
         $.each(data, function() {
             feed += "<div class=\"post\"><strong>" + this.author_handle + ": </strong>" + this.summary + "</div>";
@@ -25,7 +25,7 @@ $(function() {
 
       $.ajax({
         type: "POST",
-        url: "http://localhost:3000/post",
+        url: "http://anonfeed.herokuapp.com/post",
         data: JSON.stringify(json),
         contentType: 'application/json; charset=utf-8',
         success: function(msg) {
