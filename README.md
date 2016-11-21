@@ -98,7 +98,7 @@ impl Author {
 ```
 
 The `Author` struct is not strictly necessary here, but I think it's cleaner to
-reserve this for the future. Most of the above code should be fairly self-explanatory.
+reserve this for the future. Most of the above code should be fairly self explanatory.
 Deriving `RustcEncodable` and `RustcDecodable` allows us to have the `rustc-serialize` library
 automatically encode and decode objects to and from JSON.
 
@@ -222,7 +222,7 @@ request handlers.
 ### Request handlers
 
 Now, let's have a look at the actual handlers. We will first create a struct
-that will obtain all handlers:
+that will contain all handlers:
 
 ```rust
 pub struct Handlers {
