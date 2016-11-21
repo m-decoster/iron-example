@@ -1,6 +1,7 @@
 $(document).ready(function(){
     $.get("https://anonfeed.herokuapp.com/feed", function(data) {
         let feed = "";
+        data = data.slice(0, 10);
         $.each(data, function() {
             feed += "<div class=\"post\"><strong>" + this.author_handle + ": </strong>" + this.summary + "</div>";
         });
