@@ -1,0 +1,27 @@
+.jumbotron {
+    background-color: #1E90FF;
+    color: #ffffff;
+    padding: 100px 25px;
+    font-family: Lato, sans-serif;
+}
+
+.bg-trans {
+    color: #f6f6f6;
+    font-family: Lato, sans-serif;
+}
+
+.bg-grey {
+    background-color: #f6f6f6;
+}
+
+.container-fluid {
+    padding: 60px 50px;
+}
+
+.logo-small {
+    color: #1E90FF;
+    font-size: 50px;
+}
+
+.row {
+    padding: 30px;
